@@ -1,52 +1,33 @@
 import throttle from 'lodash.throttle';
 
-const form = document.querySelector('form.feedback-form');
-const formEmail = document.querySelector('form input');
-const formMessage = document.querySelector('form textarea');
+const form = document.querySelector('.feedback-form');
+const email = document.querySelector('.feedback-form input');
+const message = document.querySelector('.feedback-form textarea');
 
-populateForm();
+form.addEventListener('input', throttle(onFormData, 500));
+form.addEventListener('submit', onSubmitForm);
 
 let formData = {
   email: '',
   message: '',
 };
-form.addEventListener('input', throttle(onFormInput, 500));
-function onFormInput(e) {
+
+function onFormData(e) {
   formData[e.target.name] = e.target.value;
-
-  localStorage.setItem(
-    'feedback-form-state',
-    JSON.stringify({
-      ...formData,
-      email: formEmail.value,
-      message: formMessage.value,
-    })
-  );
+  localStorage.setItem('feedback-form-state', JSON.stringify(formData));
+}
+function onSubmitForm(e) {
+  console.log(JSON.parse(localStorage.getItem('feedback-form-state')));
+  e.preventDefault();
+  e.currentTarget.reset();
+  localStorage.removeItem('feedback-form-state');
 }
 
-form.addEventListener('submit', onFormSubmit);
-function onFormSubmit(evt) {
-  evt.preventDefault();
-  if (formEmail.value && formMessage.value) {
-    form.reset();
-    localStorage.removeItem('feedback-form-state');
-    console.log(formData);
-    formData.email = '';
-    formData.message = '';
-  } else {
-    alert('Увага!!! Всі поля форми мають бути заповнені!');
+(function dataFromLocalStorage() {
+  const data = JSON.parse(localStorage.getItem('feedback-form-state'));
+  email, message;
+  if (data) {
+    email.value = data.email;
+    message.value = data.message;
   }
-}
-
-function populateForm() {
-  const savedFormData = localStorage.getItem('feedback-form-state');
-
-  if (savedFormData) {
-    const parsedFormData = JSON.parse(savedFormData);
-    formEmail.value = parsedFormData.email;
-    formMessage.value = parsedFormData.message;
-  } else {
-    formEmail.value = '';
-    formMessage.value = '';
-  }
-}
+})();
